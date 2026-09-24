@@ -1,9 +1,103 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="calendar.css">
+<title>Month Calendar</title>
 
+</head>
 <body>
 
     <h1>Hi. This is a test.</h1>
 
     <p>This page will be used to display a calendar of availability for the daily AQI data released by Central Pollution Control Board (CPCB)</p>
 
+      <div class="wrap">
+    <h1>Select a month</h1>
+    <select id="monthSelect"></select>
+    <div class="calendar-card">
+      <table>
+        <thead>
+          <tr id="weekdayHeader"></tr>
+        </thead>
+        <tbody id="calendarBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const weekdayLabels = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const select = document.getElementById('monthSelect');
+  const header = document.getElementById('weekdayHeader');
+  const body = document.getElementById('calendarBody');
+
+  // Populate weekday header once
+  weekdayLabels.forEach(d => {
+    const th = document.createElement('th');
+    th.textContent = d;
+    header.appendChild(th);
+  });
+
+  // Populate dropdown: Jan 2025 - Dec 2026
+  const years = [2025, 2026];
+  years.forEach(year => {
+    monthNames.forEach((name, idx) => {
+      const opt = document.createElement('option');
+      opt.value = `${year}-${idx}`;
+      opt.textContent = `${name} ${year}`;
+      select.appendChild(opt);
+    });
+  });
+
+  function renderCalendar(year, month) {
+    body.innerHTML = '';
+    const firstDay = new Date(year, month, 1);
+    const startWeekday = firstDay.getDay(); // 0 = Sun
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const today = new Date();
+    const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+
+    let day = 1;
+    const totalCells = Math.ceil((startWeekday + daysInMonth) / 7) * 7;
+    for (let row = 0; row < totalCells / 7; row++) {
+      const tr = document.createElement('tr');
+      for (let col = 0; col < 7; col++) {
+        const cellIndex = row * 7 + col;
+        const td = document.createElement('td');
+        td.className = 'day-cell';
+        if (cellIndex < startWeekday || day > daysInMonth) {
+          td.classList.add('empty');
+          td.textContent = '·';
+        } else {
+          td.textContent = day;
+          if (isCurrentMonth && day === today.getDate()) {
+            td.classList.add('today');
+          }
+          day++;
+        }
+        tr.appendChild(td);
+      }
+      body.appendChild(tr);
+    }
+  }
+
+  select.addEventListener('change', () => {
+    const [year, month] = select.value.split('-').map(Number);
+    renderCalendar(year, month);
+  });
+
+  // Default to current month if within range, else January 2025
+  const now = new Date();
+  let defaultYear = now.getFullYear();
+  let defaultMonth = now.getMonth();
+  if (!years.includes(defaultYear)) {
+    defaultYear = 2025;
+    defaultMonth = 0;
+  }
+  select.value = `${defaultYear}-${defaultMonth}`;
+  renderCalendar(defaultYear, defaultMonth);
+</script>
 </body>
